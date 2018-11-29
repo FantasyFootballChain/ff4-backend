@@ -3,7 +3,7 @@
 Server and oracle for fantasy football chain
 
 ## How to deploy
-Setup DB credentials in `src/datasources/db.datasource.json`. Example:
+1. Setup DB credentials for REST server in `src/datasources/db.datasource.json`. Example:
 ```
 {
   "name": "db",
@@ -15,6 +15,25 @@ Setup DB credentials in `src/datasources/db.datasource.json`. Example:
   "password": "password",
   "database": "db_name"
 }
+```
+
+2. Setup DB credentials for migrations in `database.json`. Example:
+```
+{
+	"dev": {
+		"host": "localhost",
+		"user": "user",
+		"password": "password",
+		"database": "db_name",
+		"driver": "mysql",
+		"multipleStatements": true
+	}
+}
+```
+
+3. Run DB migrations
+```
+./node_modules/.bin/db-migrate up
 ```
 
 [![LoopBack](https://github.com/strongloop/loopback-next/raw/master/docs/site/imgs/branding/Powered-by-LoopBack-Badge-(blue)-@2x.png)](http://loopback.io/)

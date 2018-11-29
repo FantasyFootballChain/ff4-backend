@@ -63,5 +63,8 @@ api-docs/
 # Transpiled JavaScript files from Typescript
 /dist
 
-# DB credentials
+# DB credentials for REST server
 src/datasources/db.datasource.json
+
+# DB credentials for initial migrations
+database.json
