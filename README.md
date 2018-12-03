@@ -17,23 +17,27 @@ Server and oracle for fantasy football chain
 }
 ```
 
-2. Setup DB credentials for migrations in `database.json`. Example:
+2. Setup environment variables in `env.js`. Example:
 ```
-{
-	"dev": {
-		"host": "localhost",
-		"user": "user",
-		"password": "password",
-		"database": "db_name",
-		"driver": "mysql",
-		"multipleStatements": true
-	}
-}
+module.exports = {
+	DB_HOST: "host",
+	DB_USER: "username",
+	DB_PASSWORD: "password",
+	DB_DATABASE: "db_name",
+	SPORTMONKS_API_KEY: "api_key"
+};
 ```
 
 3. Run DB migrations
 ```
-./node_modules/.bin/db-migrate up
+./node_modules/.bin/db-migrate --config database.js up
+```
+
+## Scraper for [Sportmonks API](https://www.sportmonks.com)
+Add to cron the following scripts to parse data and save it to DB:
+```
+node scraper/scripts/seasons.js
+node scraper/scripts/countries.js
 ```
 
 [![LoopBack](https://github.com/strongloop/loopback-next/raw/master/docs/site/imgs/branding/Powered-by-LoopBack-Badge-(blue)-@2x.png)](http://loopback.io/)

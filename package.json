@@ -53,7 +53,9 @@
     "@loopback/service-proxy": "^1.0.1",
     "db-migrate": "^0.11.4",
     "db-migrate-mysql": "^1.1.10",
-    "loopback-connector-mysql": "^5.3.1"
+    "loopback-connector-mysql": "^5.3.1",
+    "mysql": "^2.16.0",
+    "sportmonks": "^1.2.0"
   },
   "devDependencies": {
     "@loopback/build": "^1.0.1",

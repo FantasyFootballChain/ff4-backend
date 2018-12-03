@@ -66,5 +66,5 @@ api-docs/
 # DB credentials for REST server
 src/datasources/db.datasource.json
 
-# DB credentials for initial migrations
-database.json
+# env
+env.js
