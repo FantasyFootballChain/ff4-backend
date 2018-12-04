@@ -11,7 +11,7 @@ try {
 }
 
 /**
- * Main function. Scrapes all teams for leagues from 'league' table
+ * Main function. Scrapes all teams for leagues from 'league' table. Populates tables: 'club', 'league_club'.
  */
 async function main() {
 	let sql = `SELECT * FROM league`;
@@ -25,11 +25,19 @@ async function main() {
 			const clubs = await db.query(sql, clubData.id);
 			// if there is no such club then save it to DB
 			if (clubs.length == 0) {
+				// insert club into `club` table
 				sql = `INSERT INTO club SET ?`;
-				const data = {
+				let data = {
 					id: clubData.id,
 					name: clubData.name,
 					photo_url: clubData.logo_path
+				};
+				await (db.query(sql, data));
+				// attach club to leagues
+				sql = `INSERT INTO league_club SET ?`;
+				data = {
+					league_id: league.id,
+					club_id: clubData.id
 				};
 				await (db.query(sql, data));
 			}
