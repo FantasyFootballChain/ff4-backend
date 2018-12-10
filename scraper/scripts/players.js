@@ -17,9 +17,11 @@ async function main() {
 	const leagueClubs = await db.query(`SELECT * FROM league_club`);
 	// for all available leagueClubs
 	for (let leagueClub of leagueClubs) {
+		// load league
+		const league = (await db.query(`SELECT * FROM league WHERE id = ?`, leagueClub.league_id))[0];
 		// load players from club
-		const resp = await sportmonks.get(`v2.0/teams/{team_id}`, { "team_id": leagueClub.club_id, "squad.position,squad.player": true });
-		for (let player of resp.data.squad.data) {
+		const resp = await sportmonks.get(`v2.0/squad/season/{season_id}/team/{club_id}`, { "season_id": league.season_id, "club_id": leagueClub.club_id, player: true, position: true });
+		for (let player of resp.data) {
 			// check that player is not yet exists
 			const players = await db.query(`SELECT id FROM player WHERE id = ?`, player.player_id);
 			// if there is no such player then save it to DB
@@ -33,17 +35,16 @@ async function main() {
 					}));
 				}
 				// save player to DB
-				const league = (await db.query(`SELECT * FROM league WHERE id = ?`, leagueClub.league_id))[0];
 				await db.query(`INSERT INTO player SET ?`, {
 					id: player.player_id,
 					full_name: player.player.data.fullname,
 					photo_url: player.player.data.image_path,
 					position_id: player.position_id,
-					country_id: league.country_id
+					country_id: player.player.data.country_id
 				});
 				// save player to club_player table
 				await db.query(`INSERT INTO club_player SET ?`, {
-					price: null, // TODO
+					price: Math.floor(Math.random() * 10) + 1, // TODO: get real price
 					club_id: leagueClub.club_id,
 					player_id: player.player_id,
 					season_id: league.season_id

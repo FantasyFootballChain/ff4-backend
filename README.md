@@ -42,6 +42,7 @@ node scraper/scripts/leagues.js
 node scraper/scripts/clubs.js
 node scraper/scripts/players.js
 node scraper/scripts/matches.js
+node scraper/scripts/match_player_stats.js
 ```
 
 [![LoopBack](https://github.com/strongloop/loopback-next/raw/master/docs/site/imgs/branding/Powered-by-LoopBack-Badge-(blue)-@2x.png)](http://loopback.io/)
