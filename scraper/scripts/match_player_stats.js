@@ -39,19 +39,15 @@ async function main() {
 	}
 	// transform match ids to array of chunks of size 25 that is API max
 	let chunks = [];
-	const chunksCount = Math.ceil(matchIds.length / 25);
+	const chunkSize = 25;
+	const chunksCount = Math.ceil(matchIds.length / chunkSize);
 	for (let i = 0; i < chunksCount; i++) {
-		const beginIndex = i * 25;
-		const endIndex = 25 + 25 * i;
+		const beginIndex = i * chunkSize;
+		const endIndex = chunkSize + chunkSize * i;
 		chunks.push(matchIds.slice(beginIndex, endIndex));
 	}
 
-	// TODO: delete
-	chunks = [
-		[10328705]
-	];
-
-	// for each chunk of 25 matches get stats
+	// for each chunk of N matches get stats
 	for (let chunk of chunks) {
 		const matches = await sportmonks.get(`v2.0/fixtures/multi/{match_ids_string}`, { "match_ids_string": chunk.join(), "lineup": true, "bench": true });
 		// for each match
@@ -60,8 +56,19 @@ async function main() {
 			const squad = match.lineup.data.concat(match.bench.data);
 			// for each player save stats
 			for (let playerData of squad) {
+				// stats for all player positions
 				await saveStat(playerData.player_id, playerData.team_id, match.season_id, match.id, STAT_MINUTES_PLAYED, playerData.stats.other.minutes_played);
-				// TODO: add other stats
+				await saveStat(playerData.player_id, playerData.team_id, match.season_id, match.id, STAT_GOALS_SCORED, playerData.stats.goals.scored);
+				await saveStat(playerData.player_id, playerData.team_id, match.season_id, match.id, STAT_ASSISTS, playerData.stats.other.assists);
+				await saveStat(playerData.player_id, playerData.team_id, match.season_id, match.id, STAT_PENALTIES_EARNED, playerData.stats.other.pen_won);
+				await saveStat(playerData.player_id, playerData.team_id, match.season_id, match.id, STAT_MISSED_PENALTIES, playerData.stats.other.pen_missed);
+				await saveStat(playerData.player_id, playerData.team_id, match.season_id, match.id, STAT_YELLOW_CARDS, playerData.stats.cards.yellowcards);
+				await saveStat(playerData.player_id, playerData.team_id, match.season_id, match.id, STAT_RED_CARDS, playerData.stats.cards.redcards);
+				// stats for goalkeepers
+				if (playerData.position == "G") {
+					await saveStat(playerData.player_id, playerData.team_id, match.season_id, match.id, STAT_BLOCKED_PENALTIES, playerData.stats.other.pen_saved);
+					await saveStat(playerData.player_id, playerData.team_id, match.season_id, match.id, STAT_SAVES, playerData.stats.other.saves);
+				}
 			}
 		}
 	}
@@ -72,8 +79,16 @@ async function main() {
  */
 async function saveStat(playerId, clubId, seasonId, matchId, statId, statValue) {
 
+	// there is no player id for some players as well as full info about them so we skip them till they officially appear in season squads
+	if (!playerId) return;
+
 	// find club_player model
 	let clubPlayer = (await db.query(`SELECT * FROM club_player WHERE club_id = ? AND player_id = ? AND season_id = ?`, [clubId, playerId, seasonId]))[0];
+
+	// TODO: fix neatly
+	// if player is registered in other club then this is API issue, skip such players
+	let clubPlayerOld = (await db.query(`SELECT * FROM club_player WHERE player_id = ? AND season_id = ?`, [playerId, seasonId]))[0];
+	if (!clubPlayer && clubPlayerOld) return;
 
 	// if there is no such club player then insert him into DB
 	if (!clubPlayer) {
@@ -103,7 +118,7 @@ async function saveStat(playerId, clubId, seasonId, matchId, statId, statValue) 
 			club_player_id: clubPlayer.id,
 			match_id: matchId,
 			stat_id: statId,
-			value: statValue
+			value: statValue || 0
 		});
 	} else {
 		// update stat
