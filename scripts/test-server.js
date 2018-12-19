@@ -29,19 +29,26 @@ app.get('/leagues', async (req, res) => {
 });
 
 app.get('/players', async (req, res) => {
-	const players = await db.query(`
-		SELECT
-		club_player.id,
-		club_player.price,
-		player.full_name,
-		player.photo_url,
-		player.position_id,
-		player_position.name as position_name
-		FROM club_player
-		LEFT JOIN player ON player.id = club_player.player_id
-		LEFT JOIN player_position ON player_position.id = player.position_id`
-	);
-	return res.json(players);
+	if (!req.query.league_id) {
+		res.status(400).send({ error: `league_id can not be empty` });
+	} else {
+		const players = await db.query(`
+			SELECT
+			club_player.id,
+			club_player.price,
+			player.full_name,
+			player.photo_url,
+			player.position_id,
+			player_position.name as position_name
+			FROM club_player
+			LEFT JOIN player ON player.id = club_player.player_id
+			LEFT JOIN player_position ON player_position.id = player.position_id
+			LEFT JOIN league_club ON league_club.club_id = club_player.club_id
+			WHERE league_club.league_id = ?`,
+			req.query.league_id
+		);
+		return res.json(players);
+	}
 });
 
 app.get('/players/:id', async (req, res) => {
@@ -60,7 +67,7 @@ app.get('/players/:id', async (req, res) => {
 		req.params.id
 	);
 	if (players.length == 0) {
-		res.status(400).send({ error: `Player with id ${req.params.id} not found` })
+		res.status(400).send({ error: `Player with id ${req.params.id} not found` });
 	} else {
 		return res.json(players[0]);
 	}
