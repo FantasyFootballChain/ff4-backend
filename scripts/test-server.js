@@ -5,6 +5,11 @@ const db = require('../scraper/helpers/db');
 const app = express();
 const port = 3000;
 
+app.use((req, res, next) => {
+	res.append('Access-Control-Allow-Origin', ['*']);
+	next();
+});
+
 app.get('/', (req, res) => res.send('It works!'));
 
 app.get('/leagues', async (req, res) => {
